@@ -103,7 +103,7 @@ function processSwapFile() {
   echo "* Working on file: $swapfile"
 
   if [[ "$swapfileMinusPath" == ".sw[a-z]" ]]; then
-    echo "The file $realfile was only a .swp file, meaning it could have been an unsaved buffer. You should recover it manually. Leaving it alone."
+    echo "The file $swapfile was an nameless swapfile, meaning it could be a buffer that was never saved to disk. You should recover it manually using 'vim -r $swapfile'. Skipping."
     return
   fi
 
