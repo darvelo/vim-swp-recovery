@@ -127,6 +127,9 @@ function processSwapFile() {
     echo "Swapfile is not newer than the original file and/or the recoverfile is not larger than the original file. Let's do a diff."
   fi
 
+  printf "\nPress Enter to continue...\n"
+  read
+
   # origfile wasn't byte-equal with recoverfile and:
   # - swapfile was newer than origfile
   # - recoverfile was larger than origfile
