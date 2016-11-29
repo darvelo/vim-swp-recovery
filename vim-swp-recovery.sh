@@ -22,6 +22,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+if [ `uname` == "Darwin" ]; then
+  if ! which gsed >/dev/null 2>&1; then
+    echo "You're on a mac. Please brew install gnu-sed."
+    exit 1
+  fi
+  if ! which greadlink >/dev/null 2>&1; then
+    echo "You're on a mac. Please brew install gnu-readlink."
+    exit 1
+  fi
+  echo "OS is Mac."
+  OS="mac"
+  SED="gsed"
+else
+  echo "OS is Linux."
+  OS="linux"
+  SED="sed"
+fi
+
 args=()
 
 if [ -z "$1" ]; then
@@ -82,7 +100,11 @@ function diffRecoveredFile () {
 
 function processSwapFile() {
   # path plus swapfile filename
-  local swapfile=`readlink -f "$1"`
+  if [ $OS = "mac" ]; then
+    local swapfile=`greadlink -f "$1"`
+  else
+    local swapfile=`readlink -f "$1"`
+  fi
 
   if [[ ! "$swapfile" =~ \.sw[a-z]$ ]]; then
     echo "File $swapfile was not a swapfile. Skipping."
@@ -94,7 +116,7 @@ function processSwapFile() {
   # the swap filename itself
   local swapfileMinusPath=`basename "$swapfile"`
   # the original file the swap file is referring to. just the filename
-  local origfileMinusPath=$(echo $swapfileMinusPath | sed -r 's/^\.([^/]*)\.sw[a-z]$/\1/')
+  local origfileMinusPath=$(echo $swapfileMinusPath | $SED -r 's/^\.([^/]*)\.sw[a-z]$/\1/')
   # the original file prepended with its path
   local origfile="$path/$origfileMinusPath"
   # the tmp file it'll be recovered to in order to perform a vimdiff
@@ -115,7 +137,7 @@ function processSwapFile() {
     elif [ ! -f "$f" ]; then
       echo "File $f does not exist." >&2
       return
-    elif fuser "$f"; then
+    elif [ "x" != "x$(fuser "$f" 2>/dev/null)" ]; then
       echo "File $f in use by another process." >&2
       return
     fi
